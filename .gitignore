@@ -1,0 +1,4 @@
+.DS_Store
+.idea
+/binaries/data.sqlite
+/binaries/notify_ld_inbox

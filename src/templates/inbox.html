@@ -1,0 +1,20 @@
+{{ .Body }}
+
+<table id="inboxTable" class="table table-sm table-striped">
+    <thead>
+    <tr class="column-header-row">
+        <th>ID</th>
+        <th>Created</th>
+        <th>Sender</th>
+    </tr>
+    </thead>
+    <tbody>
+    {{ range .Notifications }}
+        <tr>
+            <td><a href="{{ .Url }}">{{ .ID }}</a></td>
+            <td>{{ .FormattedTimestamp }}</td>
+            <td>{{ .Sender }}</td>
+        </tr>
+    {{ end }}
+    </tbody>
+</table>

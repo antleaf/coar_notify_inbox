@@ -1,0 +1,25 @@
+<div class="row">
+    <div class="col">
+        <table class="invisible-layout-table">
+            <tr>
+                <td class="field-name">Notification ID:</td>
+                <td>{{ .Notification.ID }}</td>
+            </tr>
+            <tr>
+                <td class="field-name">Created:</td>
+                <td>{{ .Notification.FormattedTimestamp }}</td>
+            </tr>
+            <tr>
+                <td class="field-name">Sender:</td>
+                <td>{{ .Notification.Sender }}</td>
+            </tr>
+        </table>
+    </div>
+    <div class="col">
+        {{ .Notification.HTMLFormattedPayload }}
+    </div>
+</div>
+
+
+
+
