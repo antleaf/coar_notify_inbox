@@ -10,6 +10,7 @@ func ConfigureRouter() chi.Router {
 	r := chi.NewRouter()
 	r.Use(middleware.Logger)
 	r.Use(middleware.StripSlashes)
+	//TODO: figure out if it is possible to use this CORS module to add common HTTP headers to all HTTP Responses. Otherwise write a middleware handler to do this.
 	//r.Use(cors.Handler(cors.Options{
 	//	// AllowedOrigins:   []string{"https://foo.com"}, // Use this to allow specific origin hosts
 	//	AllowedOrigins: []string{"https://*", "http://*"},

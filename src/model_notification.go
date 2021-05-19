@@ -8,40 +8,6 @@ import (
 	"time"
 )
 
-const ldpContextURI = "http://www.w3.org/ns/ldp"
-
-type Inbox struct {
-	Notifications []Notification
-}
-
-func (inbox *Inbox) Populate() {
-	inbox.Notifications = nil //TODO: is this necessary, or does the next line invoke garbage collection anyway?
-	inbox.Notifications = make([]Notification, 0)
-	rows, _ := db.Model(&NotificationDbRecord{}).Rows()
-	defer rows.Close()
-	for rows.Next() {
-		var notificationDbRecord NotificationDbRecord
-		db.ScanRows(rows, &notificationDbRecord)
-		inbox.Notifications = append(inbox.Notifications, LoadNotificationFromDbRecord(notificationDbRecord))
-	}
-}
-
-func (inbox *Inbox) Add(notification Notification) {
-	inbox.Notifications = append(inbox.Notifications, notification)
-}
-
-func (inbox *Inbox) GetAsMapToPassToJsonRender() map[string]interface{} {
-	inboxPayload := make(map[string]interface{})
-	notificationURIs := make([]string, 0)
-	for _, notification := range inbox.Notifications {
-		notificationURIs = append(notificationURIs, notification.Url())
-	}
-	inboxPayload["@context"] = ldpContextURI
-	inboxPayload["@id"] = site.InboxUrl()
-	inboxPayload["contains"] = notificationURIs
-	return inboxPayload
-}
-
 type Notification struct {
 	ID        uint
 	Sender    string
@@ -49,32 +15,40 @@ type Notification struct {
 	Payload   map[string]interface{}
 }
 
-func NewNotification(sender string, timestamp time.Time, payloadJson []byte) *Notification {
+func NewNotification(sender string, timestamp time.Time, payloadJson []byte) (*Notification, error) {
 	var n Notification
+	var err error
 	n.Sender = sender
 	n.CreatedAt = timestamp
-	err := json.Unmarshal(payloadJson, &(n.Payload))
+	err = json.Unmarshal(payloadJson, &(n.Payload))
 	if err != nil {
 		zapLogger.Error(err.Error())
 	}
-	return &n
+	return &n, err
 }
 
-func (notification *Notification) SaveNotificationToDb() {
+func (notification *Notification) SaveNotificationToDb() error {
+	var err error
 	notificationRecord := NotificationDbRecord{}
 	notificationRecord.Sender = notification.Sender
 	notificationRecord.CreatedAt = notification.CreatedAt
 	payloadBytes, err := json.Marshal(notification.Payload)
 	if err != nil {
 		zapLogger.Error(err.Error())
+		return err
 	}
 	notificationRecord.Payload = string(payloadBytes)
-	db.Create(&notificationRecord)
+	err = db.Create(&notificationRecord).Error
+	if err != nil {
+		zapLogger.Error(err.Error())
+		return err
+	}
 	notification.ID = notificationRecord.ID
-	notification.Payload["id"] = notification.Url()
-	payloadBytes, err = json.Marshal(notification.Payload)
-	notificationRecord.Payload = string(payloadBytes)
-	db.Save(&notificationRecord)
+	//notification.Payload["id"] = notification.Url()
+	//payloadBytes, err = json.Marshal(notification.Payload)
+	//notificationRecord.Payload = string(payloadBytes)
+	//db.Save(&notificationRecord)
+	return err
 }
 
 func LoadNotificationFromDbRecord(notificationRecord NotificationDbRecord) Notification {

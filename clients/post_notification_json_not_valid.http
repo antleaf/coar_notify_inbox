@@ -1,7 +1,7 @@
 POST http://localhost:1313/inbox
 Content-Type: application/ld+json
 
-< ../data/payload.json
+< ../data/payload_json_not_valid.json
 
 ###
 

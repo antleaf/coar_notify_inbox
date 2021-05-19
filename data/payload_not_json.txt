@@ -1,0 +1,1 @@
+some old rubbish that isn't even well-formed JSON-LD, let alone Notify compliant

@@ -1,0 +1,7 @@
+POST http://localhost:1313/inbox
+Content-Type: application/ld+json
+
+< ../data/payload_valid_notify.json
+
+###
+
