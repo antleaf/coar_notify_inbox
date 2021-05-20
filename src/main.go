@@ -1,12 +1,9 @@
 package main
 
 import (
-	"flag"
-	"fmt"
 	"github.com/go-chi/chi/v5"
 	"github.com/unrolled/render"
 	"go.uber.org/zap"
-	"net/http"
 )
 
 var zapLogger *zap.Logger
@@ -16,18 +13,21 @@ var pageRender *render.Render
 var inbox = Inbox{}
 
 func main() {
-	debugPtr := flag.Bool("debug", false, "Enable debug logging")
-	portPtr := flag.Int("port", 1313, "Port number")
-	dbPathPtr := flag.String("db", "./db.sqlite", "Path to to Database file")
-	baseUrlPtr := flag.String("baseUrl", "http://localhost:1313", "Base URL")
-	flag.Parse()
-	config.initialise(debugPtr, portPtr, dbPathPtr, baseUrlPtr)
-	err := InitialiseDb(config.DbFilePath)
-	inbox.Populate()
-	initialiseRendering()
-	if err != nil {
-		zapLogger.Fatal(err.Error())
+	var err error
+	err = configure()
+	if err == nil {
+		zapLogger.Info("System configured OK")
+	} else {
+		zapLogger.Fatal("Aborting start-up due to configuration error")
 	}
-	router = ConfigureRouter()
-	http.ListenAndServe(fmt.Sprintf(":%v", config.Port), router)
+
+	//http.ListenAndServe(fmt.Sprintf(":%v", config.Port), router)
+	err = testxpandJsonFromFile("data/payload_json_not_valid.json")
+	//err = testxpandJsonFromFile("data/payload_valid_notify.json")
+	//err = testxpandJsonFromFile("data/payload_not_json.txt")
+	//notification := LoadNotificationFromDbById(2)
+	//err = testxpandJsonFromInterfaces(notification.Payload)
+	if err != nil {
+		zapLogger.Error(err.Error())
+	}
 }
