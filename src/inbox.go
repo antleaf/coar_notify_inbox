@@ -20,7 +20,7 @@ func (inbox *Inbox) SaveToDb() error {
 
 func (inbox *Inbox) LoadFromDb() error {
 	var err error
-	rows, err := db.Model(&NotificationDbRecord{}).Rows()
+	rows, err := db.Model(&Notification{}).Rows()
 	defer rows.Close()
 	if err != nil {
 		if err != nil {
@@ -29,13 +29,13 @@ func (inbox *Inbox) LoadFromDb() error {
 		}
 	}
 	for rows.Next() {
-		var notificationDbRecord NotificationDbRecord
-		err = db.ScanRows(rows, &notificationDbRecord)
+		var notification Notification
+		err = db.ScanRows(rows, &notification)
 		if err != nil {
 			zapLogger.Error(err.Error())
 			return err
 		}
-		inbox.Notifications = append(inbox.Notifications, LoadNotificationFromDbRecord(notificationDbRecord))
+		inbox.Notifications = append(inbox.Notifications, notification)
 	}
 	return err
 }

@@ -28,34 +28,6 @@ func HomePageGet(w http.ResponseWriter, r *http.Request) {
 	pageRender.HTML(w, http.StatusOK, "page", page)
 }
 
-//func InboxPost(w http.ResponseWriter, r *http.Request) {
-//	var err error
-//	payloadJson, err := ioutil.ReadAll(r.Body)
-//	if handleRequestProcessingError(w, err, "Unable to read posted content", 400) {
-//		return
-//	}
-//	buffer := new(bytes.Buffer)
-//	err = json.Compact(buffer, payloadJson)
-//	if handleRequestProcessingError(w, err, "Unable to parse posted content (must be JSON-LD)", 400) {
-//		return
-//	}
-//	payloadJson = buffer.Bytes()
-//	notification, err := NewNotification(GetIP(r), time.Now(), payloadJson)
-//	err = notification.SaveToDb()
-//	if handleRequestProcessingError(w, err, "Unable to save notification record to DB", 500) {
-//		return
-//	}
-//	inbox.Add(*notification)
-//	var page = NewPage()
-//	page.Params["notificationUrl"] = fmt.Sprint(notification.ID)
-//	page.Title = "Notification Response"
-//	w.Header().Set("Location", notification.Url())
-//	err = pageRender.HTML(w, http.StatusCreated, "post_success", page)
-//	if handleRequestProcessingError(w, err, "Unable to process request", 500) {
-//		return
-//	}
-//}
-
 func InboxPost(w http.ResponseWriter, r *http.Request) {
 	var err error
 	payloadJson, err := ioutil.ReadAll(r.Body)

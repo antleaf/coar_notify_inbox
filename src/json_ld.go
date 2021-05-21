@@ -11,7 +11,7 @@ func testExpandJsonFromNotificationRecord(notification Notification) error {
 	var err error
 	jsonLdProcessor := ld.NewJsonLdProcessor()
 	var jsonLdProcessorOptions = ld.NewJsonLdOptions("")
-	_, err = jsonLdProcessor.Expand(notification.Payload, jsonLdProcessorOptions)
+	_, err = jsonLdProcessor.Expand(notification.PayloadStruct, jsonLdProcessorOptions)
 	if err != nil {
 		zapLogger.Error(err.Error())
 		return err

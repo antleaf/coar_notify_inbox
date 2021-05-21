@@ -9,10 +9,14 @@ import (
 )
 
 type Notification struct {
-	ID        uuid.UUID
-	Sender    string
-	CreatedAt time.Time
-	Payload   map[string]interface{}
+	ID            uuid.UUID `gorm:"type:uuid;primary_key;"`
+	CreatedAt     time.Time
+	UpdatedAt     time.Time
+	DeletedAt     *time.Time `sql:"index"`
+	Sender        string
+	Payload       []byte
+	PayloadStruct map[string]interface{} `gorm:"-"`
+	ActivityId    string
 }
 
 func NewNotification(sender string, timestamp time.Time, payloadJson []byte) (*Notification, error) {
@@ -21,33 +25,34 @@ func NewNotification(sender string, timestamp time.Time, payloadJson []byte) (*N
 	n.ID = uuid.NewV4()
 	n.Sender = sender
 	n.CreatedAt = timestamp
-	err = json.Unmarshal(payloadJson, &(n.Payload))
+	n.Payload = payloadJson
+	err = n.GeneratePayloadStructFromBytes()
 	if err != nil {
 		zapLogger.Error(err.Error())
+		return &n, err
 	}
+	n.ActivityId = n.ExtractActivityId()
 	return &n, err
 }
 
-func (notification *Notification) SaveToDb() error {
+func (notification *Notification) GeneratePayloadStructFromBytes() error {
 	var err error
-	notificationRecord := NotificationDbRecord{}
-	notificationRecord.ID = notification.ID
-	notificationRecord.Sender = notification.Sender
-	notificationRecord.CreatedAt = notification.CreatedAt
-	notificationRecord.ActivityId = notification.ActivityId()
-	payloadBytes, err := json.Marshal(notification.Payload)
+	err = json.Unmarshal(notification.Payload, &(notification.PayloadStruct))
 	if err != nil {
 		zapLogger.Error(err.Error())
 		return err
 	}
-	notificationRecord.Payload = string(payloadBytes)
-	tempNotificationRecord := NotificationDbRecord{} // use this so the db lookup does not overwrite the incoming notification with the saved one
-	err = db.First(&tempNotificationRecord, notification.ID).Error
+	return err
+}
+
+func (notification *Notification) SaveToDb() error {
+	var err error
+	tempNotification := Notification{} // use this so the db lookup does not overwrite the incoming notification with the saved one
+	err = db.First(&tempNotification, notification.ID).Error
 	if err == nil {
-		err = db.Save(&notificationRecord).Error
+		err = db.Save(&notification).Error
 	} else {
-		err = db.Create(&notificationRecord).Error
-		notification.ID = notificationRecord.ID
+		err = db.Create(&notification).Error
 	}
 	if err != nil {
 		zapLogger.Error(err.Error())
@@ -55,22 +60,10 @@ func (notification *Notification) SaveToDb() error {
 	return err
 }
 
-func LoadNotificationFromDbRecord(notificationRecord NotificationDbRecord) Notification {
-	notification := Notification{}
-	notification.ID = notificationRecord.ID
-	notification.Sender = notificationRecord.Sender
-	notification.CreatedAt = notificationRecord.CreatedAt
-	err := json.Unmarshal([]byte(notificationRecord.Payload), &(notification.Payload))
-	if err != nil {
-		zapLogger.Error(err.Error())
-	}
-	return notification
-}
-
 func LoadNotificationFromDbById(id uuid.UUID) Notification {
-	notificationRecord := NotificationDbRecord{}
-	db.First(&notificationRecord, id)
-	notification := LoadNotificationFromDbRecord(notificationRecord)
+	notification := Notification{}
+	db.First(&notification, id)
+	notification.GeneratePayloadStructFromBytes()
 	return notification
 }
 
@@ -78,8 +71,8 @@ func (notification *Notification) Url() string {
 	return site.InboxUrl() + notification.ID.String()
 }
 
-func (notification *Notification) ActivityId() string {
-	return fmt.Sprintf("%v", notification.Payload["id"])
+func (notification *Notification) ExtractActivityId() string {
+	return fmt.Sprintf("%v", notification.PayloadStruct["id"])
 }
 
 func (notification *Notification) FormattedTimestamp() string {
@@ -87,8 +80,7 @@ func (notification *Notification) FormattedTimestamp() string {
 }
 
 func (notification *Notification) HTMLFormattedPayload() template.HTML {
-	//payloadBytes,err := json.Marshal(notification.Payload)
-	payloadBytes, err := json.MarshalIndent(notification.Payload, "", "    ")
+	payloadBytes, err := json.MarshalIndent(notification.PayloadStruct, "", "    ")
 	if err != nil {
 		zapLogger.Error(err.Error())
 	}
@@ -97,7 +89,7 @@ func (notification *Notification) HTMLFormattedPayload() template.HTML {
 	return htmlPayload
 }
 
-//type Payload struct {
+//type PayloadStruct struct {
 //	Id     string   `json:"id"`
 //	Type   []string `json:"type"`
 //	Actor  Actor    `json:"actor, omitempty"`
@@ -106,7 +98,7 @@ func (notification *Notification) HTMLFormattedPayload() template.HTML {
 //	Object *Object  `json:"object,omitempty"`
 //}
 //
-//func (payload *Payload) UnMarshall(payloadJson []byte) {
+//func (payload *PayloadStruct) UnMarshall(payloadJson []byte) {
 //	err := json.Unmarshal([]byte(payloadJson), &payload)
 //	zapLogger.Error(err.Error())
 //}
