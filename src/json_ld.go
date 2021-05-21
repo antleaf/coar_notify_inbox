@@ -2,6 +2,7 @@ package main
 
 import (
 	"github.com/piprate/json-gold/ld"
+	uuid "github.com/satori/go.uuid"
 	"io/ioutil"
 	"time"
 )
@@ -14,13 +15,11 @@ func testExpandJsonFromNotificationRecord(notification Notification) error {
 	if err != nil {
 		zapLogger.Error(err.Error())
 		return err
-	} else {
-		//zapLogger.Debug("",zap.Any("",jsonInterface))
 	}
 	return err
 }
 
-func testExpandJsonFromDbId(id uint) error {
+func testExpandJsonFromDbId(id uuid.UUID) error {
 	var err error
 	notification := LoadNotificationFromDbById(id)
 	err = testExpandJsonFromNotificationRecord(notification)

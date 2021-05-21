@@ -3,13 +3,13 @@ package main
 import (
 	"encoding/json"
 	"fmt"
+	uuid "github.com/satori/go.uuid"
 	"html/template"
-	"strconv"
 	"time"
 )
 
 type Notification struct {
-	ID        uint
+	ID        uuid.UUID
 	Sender    string
 	CreatedAt time.Time
 	Payload   map[string]interface{}
@@ -18,6 +18,7 @@ type Notification struct {
 func NewNotification(sender string, timestamp time.Time, payloadJson []byte) (*Notification, error) {
 	var n Notification
 	var err error
+	n.ID = uuid.NewV4()
 	n.Sender = sender
 	n.CreatedAt = timestamp
 	err = json.Unmarshal(payloadJson, &(n.Payload))
@@ -27,27 +28,30 @@ func NewNotification(sender string, timestamp time.Time, payloadJson []byte) (*N
 	return &n, err
 }
 
-func (notification *Notification) SaveNotificationToDb() error {
+func (notification *Notification) SaveToDb() error {
 	var err error
 	notificationRecord := NotificationDbRecord{}
+	notificationRecord.ID = notification.ID
 	notificationRecord.Sender = notification.Sender
 	notificationRecord.CreatedAt = notification.CreatedAt
+	notificationRecord.ActivityId = notification.ActivityId()
 	payloadBytes, err := json.Marshal(notification.Payload)
 	if err != nil {
 		zapLogger.Error(err.Error())
 		return err
 	}
 	notificationRecord.Payload = string(payloadBytes)
-	err = db.Create(&notificationRecord).Error
+	tempNotificationRecord := NotificationDbRecord{} // use this so the db lookup does not overwrite the incoming notification with the saved one
+	err = db.First(&tempNotificationRecord, notification.ID).Error
+	if err == nil {
+		err = db.Save(&notificationRecord).Error
+	} else {
+		err = db.Create(&notificationRecord).Error
+		notification.ID = notificationRecord.ID
+	}
 	if err != nil {
 		zapLogger.Error(err.Error())
-		return err
 	}
-	notification.ID = notificationRecord.ID
-	//notification.Payload["id"] = notification.Url()
-	//payloadBytes, err = json.Marshal(notification.Payload)
-	//notificationRecord.Payload = string(payloadBytes)
-	//db.Save(&notificationRecord)
 	return err
 }
 
@@ -63,7 +67,7 @@ func LoadNotificationFromDbRecord(notificationRecord NotificationDbRecord) Notif
 	return notification
 }
 
-func LoadNotificationFromDbById(id uint) Notification {
+func LoadNotificationFromDbById(id uuid.UUID) Notification {
 	notificationRecord := NotificationDbRecord{}
 	db.First(&notificationRecord, id)
 	notification := LoadNotificationFromDbRecord(notificationRecord)
@@ -71,7 +75,11 @@ func LoadNotificationFromDbById(id uint) Notification {
 }
 
 func (notification *Notification) Url() string {
-	return site.InboxUrl() + strconv.FormatUint(uint64(notification.ID), 10)
+	return site.InboxUrl() + notification.ID.String()
+}
+
+func (notification *Notification) ActivityId() string {
+	return fmt.Sprintf("%v", notification.Payload["id"])
 }
 
 func (notification *Notification) FormattedTimestamp() string {

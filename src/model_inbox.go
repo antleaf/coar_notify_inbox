@@ -6,10 +6,20 @@ type Inbox struct {
 	Notifications []Notification
 }
 
-func (inbox *Inbox) Populate() error {
-	var err error
-	inbox.Notifications = nil //TODO: is this necessary, or does the next line invoke garbage collection anyway?
+func (inbox *Inbox) Initialise() {
 	inbox.Notifications = make([]Notification, 0)
+}
+
+func (inbox *Inbox) SaveToDb() error {
+	var err error
+	for _, notification := range inbox.Notifications {
+		notification.SaveToDb()
+	}
+	return err
+}
+
+func (inbox *Inbox) LoadFromDb() error {
+	var err error
 	rows, err := db.Model(&NotificationDbRecord{}).Rows()
 	defer rows.Close()
 	if err != nil {

@@ -1,9 +1,11 @@
 package main
 
 import (
+	"fmt"
 	"github.com/go-chi/chi/v5"
 	"github.com/unrolled/render"
 	"go.uber.org/zap"
+	"net/http"
 )
 
 var zapLogger *zap.Logger
@@ -21,13 +23,23 @@ func main() {
 		zapLogger.Fatal("Aborting start-up due to configuration error")
 	}
 
-	//http.ListenAndServe(fmt.Sprintf(":%v", config.Port), router)
-	err = testxpandJsonFromFile("data/payload_json_not_valid.json")
-	//err = testxpandJsonFromFile("data/payload_valid_notify.json")
-	//err = testxpandJsonFromFile("data/payload_not_json.txt")
-	//notification := LoadNotificationFromDbById(2)
-	//err = testxpandJsonFromInterfaces(notification.Payload)
+	runServer()
+	//cliTesting2()
+}
+
+func cliTesting2() {
+	generateUUID()
+}
+
+func cliTesting() {
+	var err error
+	err = testxpandJsonFromFile("data/payload_valid_notify.json")
+	//err = testExpandJsonFromDbId(2)
 	if err != nil {
 		zapLogger.Error(err.Error())
 	}
+}
+
+func runServer() {
+	http.ListenAndServe(fmt.Sprintf(":%v", config.Port), router)
 }

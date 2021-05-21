@@ -11,7 +11,7 @@
     <tbody>
     {{ range .Notifications }}
         <tr>
-            <td><a href="{{ .Url }}">{{ .ID }}</a></td>
+            <td><a href="{{ .Url }}">{{ .ActivityId }}</a></td>
             <td>{{ .FormattedTimestamp }}</td>
             <td>{{ .Sender }}</td>
         </tr>

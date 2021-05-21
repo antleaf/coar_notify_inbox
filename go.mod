@@ -7,6 +7,8 @@ require (
 	github.com/go-chi/chi/v5 v5.0.2
 	github.com/mattn/go-sqlite3 v1.14.7 // indirect
 	github.com/piprate/json-gold v0.4.0
+	github.com/robfig/cron/v3 v3.0.0
+	github.com/satori/go.uuid v1.2.0 // indirect
 	github.com/stretchr/testify v1.7.0 // indirect
 	github.com/unrolled/render v1.2.0
 	github.com/yuin/goldmark v1.3.5

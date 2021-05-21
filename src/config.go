@@ -7,9 +7,10 @@ import (
 )
 
 type Config struct {
-	Debugging  bool
-	Port       int
-	DbFilePath string
+	Debugging       bool
+	Port            int
+	DbFilePath      string
+	DbPersistPeriod string
 }
 
 var site = Site{}
@@ -17,8 +18,9 @@ var site = Site{}
 func (config *Config) initialise() {
 	debugPtr := flag.Bool("debug", false, "Enable debug logging")
 	portPtr := flag.Int("port", 1313, "Port number")
-	dbPathPtr := flag.String("db", "./db.sqlite", "Path to to Database file")
+	dbPathPtr := flag.String("db", "", "Path to to Database file")
 	baseUrlPtr := flag.String("baseUrl", "http://localhost:1313", "Base URL")
+	dbPersistPeriod := flag.String("dbPersistPeriod", "@every 5s", "DB Persist period (see https://pkg.go.dev/github.com/robfig/cron for syntax")
 	flag.Parse()
 	config.Debugging = *debugPtr
 	if config.Debugging == true {
@@ -28,6 +30,7 @@ func (config *Config) initialise() {
 	}
 	config.Port = *portPtr
 	config.DbFilePath = *dbPathPtr
+	config.DbPersistPeriod = *dbPersistPeriod
 	site.BaseUrl = *baseUrlPtr
 }
 
@@ -66,13 +69,19 @@ func configureZapLogger(debugging bool) (*zap.Logger, error) {
 func configure() error {
 	var err error
 	config.initialise()
-	err = InitialiseDb(config.DbFilePath)
-	if err != nil {
-		return err
-	}
-	err = inbox.Populate()
-	if err != nil {
-		return err
+	inbox.Initialise()
+	if config.DbFilePath != "" {
+		err = InitialiseDb(config.DbFilePath)
+		if err != nil {
+			zapLogger.Error(err.Error())
+			return err
+		}
+		err = inbox.LoadFromDb()
+		if err != nil {
+			zapLogger.Error(err.Error())
+			return err
+		}
+		initialisePeriodicDbPersistence(config.DbPersistPeriod)
 	}
 	initialiseRendering()
 	router = ConfigureRouter()
