@@ -7,10 +7,10 @@ import (
 )
 
 type Config struct {
-	Debugging       bool
-	Port            int
-	DbFilePath      string
-	DbPersistPeriod string
+	Debugging      bool
+	Port           int
+	DbFilePath     string
+	DbSaveInterval string
 }
 
 var site = Site{}
@@ -20,7 +20,7 @@ func (config *Config) initialise() {
 	portPtr := flag.Int("port", 1313, "Port number")
 	dbPathPtr := flag.String("db", "", "Path to to Database file")
 	baseUrlPtr := flag.String("baseUrl", "http://localhost:1313", "Base URL")
-	dbPersistPeriod := flag.String("dbPersistPeriod", "@every 5s", "DB Persist period (see https://pkg.go.dev/github.com/robfig/cron for syntax")
+	dbSaveInterval := flag.String("dbSaveInterval", "@every 5s", "DB Persist period (see https://pkg.go.dev/github.com/robfig/cron for syntax")
 	flag.Parse()
 	config.Debugging = *debugPtr
 	if config.Debugging == true {
@@ -30,7 +30,7 @@ func (config *Config) initialise() {
 	}
 	config.Port = *portPtr
 	config.DbFilePath = *dbPathPtr
-	config.DbPersistPeriod = *dbPersistPeriod
+	config.DbSaveInterval = *dbSaveInterval
 	site.BaseUrl = *baseUrlPtr
 }
 
@@ -81,7 +81,7 @@ func configure() error {
 			zapLogger.Error(err.Error())
 			return err
 		}
-		initialisePeriodicDbPersistence(config.DbPersistPeriod)
+		initialisePeriodicDbPersistence(config.DbSaveInterval)
 	}
 	initialiseRendering()
 	router = ConfigureRouter()

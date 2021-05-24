@@ -9,46 +9,39 @@ import (
 )
 
 type Notification struct {
-	ID            uuid.UUID `gorm:"type:uuid;primary_key;"`
-	CreatedAt     time.Time
-	UpdatedAt     time.Time
-	DeletedAt     *time.Time `sql:"index"`
-	Sender        string
-	Payload       []byte
-	PayloadStruct map[string]interface{} `gorm:"-"`
-	ActivityId    string
+	ID                 uuid.UUID `gorm:"type:uuid;primary_key;"`
+	CreatedAt          time.Time
+	UpdatedAt          time.Time
+	DeletedAt          *time.Time `sql:"index"`
+	Sender             string
+	Payload            []byte
+	PayloadStruct      map[string]interface{} `gorm:"-"`
+	ActivityId         string
+	HttpRequest        string
+	HttpResponseHeader string
+	HttpResponseCode   int
 }
 
-func NewNotification(sender string, timestamp time.Time, payloadJson []byte) (*Notification, error) {
+func NewNotification(sender string, timestamp time.Time) *Notification {
 	var n Notification
-	var err error
 	n.ID = uuid.NewV4()
 	n.Sender = sender
 	n.CreatedAt = timestamp
-	n.Payload = payloadJson
-	err = n.GeneratePayloadStructFromBytes()
-	if err != nil {
-		zapLogger.Error(err.Error())
-		return &n, err
-	}
-	n.ActivityId = n.ExtractActivityId()
-	return &n, err
+	return &n
 }
 
-func (notification *Notification) GeneratePayloadStructFromBytes() error {
+func (notification *Notification) GeneratePayloadStructFromBytes() {
 	var err error
 	err = json.Unmarshal(notification.Payload, &(notification.PayloadStruct))
 	if err != nil {
 		zapLogger.Error(err.Error())
-		return err
 	}
-	return err
+	notification.ActivityId = notification.ExtractActivityId()
 }
 
 func (notification *Notification) SaveToDb() error {
 	var err error
-	tempNotification := Notification{} // use this so the db lookup does not overwrite the incoming notification with the saved one
-	err = db.First(&tempNotification, notification.ID).Error
+	err = db.First(&Notification{}, notification.ID).Error
 	if err == nil {
 		err = db.Save(&notification).Error
 	} else {
@@ -86,6 +79,15 @@ func (notification *Notification) HTMLFormattedPayload() template.HTML {
 	}
 	payloadJson := fmt.Sprintf("```json\n%s\n", payloadBytes)
 	htmlPayload, _ := GetHTMLFromMarkdown([]byte(payloadJson))
+	return htmlPayload
+}
+
+func (notification *Notification) HTMLFormattedHttpHeaders() template.HTML {
+	markdown := "#### HTTP Request Headers\n"
+	markdown += fmt.Sprintf("```yaml\n%s\n```\n", notification.HttpRequest)
+	markdown += "#### HTTP Response Headers\n"
+	markdown += fmt.Sprintf("```yaml\n%s\n```\n", notification.HttpResponseHeader)
+	htmlPayload, _ := GetHTMLFromMarkdown([]byte(markdown))
 	return htmlPayload
 }
 

@@ -33,7 +33,7 @@ func cliTesting2() {
 
 func cliTesting() {
 	var err error
-	err = testxpandJsonFromFile("data/payload_valid_notify.json")
+	//err = testxpandJsonFromFile("data/payload_valid_notify.json")
 	//err = testExpandJsonFromDbId(2)
 	if err != nil {
 		zapLogger.Error(err.Error())

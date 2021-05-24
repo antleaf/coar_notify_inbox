@@ -4,16 +4,20 @@
     <thead>
     <tr class="column-header-row">
         <th>ID</th>
+        <th>Response Code</th>
         <th>Created</th>
         <th>Sender</th>
+        <th>View</th>
     </tr>
     </thead>
     <tbody>
     {{ range .Notifications }}
         <tr>
-            <td><a href="{{ .Url }}">{{ .ActivityId }}</a></td>
+            <td>{{ .ActivityId }}</td>
+            <td>{{ .HttpResponseCode }}</td>
             <td>{{ .FormattedTimestamp }}</td>
             <td>{{ .Sender }}</td>
+            <td><a href="{{ .Url }}">details</a></td>
         </tr>
     {{ end }}
     </tbody>

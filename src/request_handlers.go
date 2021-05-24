@@ -1,12 +1,11 @@
 package main
 
 import (
-	"bytes"
-	"encoding/json"
 	"fmt"
 	_ "github.com/alecthomas/chroma/formatters"
 	"github.com/go-chi/chi/v5"
 	uuid "github.com/satori/go.uuid"
+	"gopkg.in/yaml.v2"
 	"io/ioutil"
 	"net/http"
 	"path/filepath"
@@ -29,37 +28,43 @@ func HomePageGet(w http.ResponseWriter, r *http.Request) {
 }
 
 func InboxPost(w http.ResponseWriter, r *http.Request) {
+	//TODO: Refactor to allow notifications to be captured even if they are bogus - capture HTTP headers and response codes. Do validation separately
 	var err error
+	notification := NewNotification(GetIP(r), time.Now())
+	requestHeaderAsBytes, _ := yaml.Marshal(r.Header)
+	notification.HttpRequest = string(requestHeaderAsBytes)
 	payloadJson, err := ioutil.ReadAll(r.Body)
-	if handleRequestProcessingError(w, err, "Unable to read posted content", 400) {
+	if handlePostErrorCondition(err, w, 400, "Unable to read posted content", notification) {
 		return
 	}
-	buffer := new(bytes.Buffer)
-	err = json.Compact(buffer, payloadJson)
-	if handleRequestProcessingError(w, err, "Unable to parse posted content (must be JSON-LD)", 400) {
+	notification.Payload = payloadJson
+	err = notification.Validate()
+	if handlePostErrorCondition(err, w, 400, "Unable to parse posted content (must be JSON-LD)", notification) {
 		return
 	}
-	payloadJson = buffer.Bytes()
-	notification, err := NewNotification(GetIP(r), time.Now(), payloadJson)
-	//err = notification.SaveToDb()
-	if handleRequestProcessingError(w, err, "Unable to save notification record to DB", 500) {
-		return
-	}
-	inbox.Add(*notification)
+	notification.GeneratePayloadStructFromBytes()
 	var page = NewPage()
 	page.Params["notificationUrl"] = fmt.Sprint(notification.ID)
 	page.Title = "Notification Response"
 	w.Header().Set("Location", notification.Url())
 	err = pageRender.HTML(w, http.StatusCreated, "post_success", page)
-	if handleRequestProcessingError(w, err, "Unable to process request", 500) {
+	if handlePostErrorCondition(err, w, 500, "Unable to process request", notification) {
 		return
 	}
+	notification.HttpResponseCode = 201
+	responseHeaderAsBytes, _ := yaml.Marshal(w.Header())
+	notification.HttpResponseHeader = string(responseHeaderAsBytes)
+	inbox.Add(*notification)
 }
 
-func handleRequestProcessingError(w http.ResponseWriter, err error, message string, code int) bool {
+func handlePostErrorCondition(err error, w http.ResponseWriter, code int, message string, notification *Notification) bool {
 	if err != nil {
-		zapLogger.Error(message + err.Error())
+		zapLogger.Error(err.Error())
 		http.Error(w, message, code)
+		notification.HttpResponseCode = code
+		responseHeaderAsBytes, _ := yaml.Marshal(w.Header())
+		notification.HttpResponseHeader = string(responseHeaderAsBytes)
+		inbox.Add(*notification)
 		return true
 	} else {
 		return false
