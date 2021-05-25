@@ -19,4 +19,5 @@ require (
 	gopkg.in/yaml.v2 v2.4.0 // indirect
 	gorm.io/driver/sqlite v1.1.4
 	gorm.io/gorm v1.20.7
+	github.com/go-fed/activity v1.0.0
 )

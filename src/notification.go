@@ -15,7 +15,6 @@ type Notification struct {
 	DeletedAt          *time.Time `sql:"index"`
 	Sender             string
 	Payload            []byte
-	PayloadStruct      map[string]interface{} `gorm:"-"`
 	ActivityId         string
 	HttpRequest        string
 	HttpResponseHeader string
@@ -30,13 +29,14 @@ func NewNotification(sender string, timestamp time.Time) *Notification {
 	return &n
 }
 
-func (notification *Notification) GeneratePayloadStructFromBytes() {
+func (notification *Notification) GeneratePayloadStructFromBytes() (map[string]interface{}, error) {
 	var err error
-	err = json.Unmarshal(notification.Payload, &(notification.PayloadStruct))
+	var payloadStruct map[string]interface{}
+	err = json.Unmarshal(notification.Payload, &(payloadStruct))
 	if err != nil {
 		zapLogger.Error(err.Error())
 	}
-	notification.ActivityId = notification.ExtractActivityId()
+	return payloadStruct, err
 }
 
 func (notification *Notification) SaveToDb() error {
@@ -64,8 +64,12 @@ func (notification *Notification) Url() string {
 	return site.InboxUrl() + notification.ID.String()
 }
 
-func (notification *Notification) ExtractActivityId() string {
-	return fmt.Sprintf("%v", notification.PayloadStruct["id"])
+func (notification *Notification) ProcessPayload() {
+	var err error
+	payloadStruct, err := notification.GeneratePayloadStructFromBytes()
+	if err == nil {
+		notification.ActivityId = fmt.Sprintf("%v", payloadStruct["id"])
+	}
 }
 
 func (notification *Notification) FormattedTimestamp() string {
@@ -73,13 +77,15 @@ func (notification *Notification) FormattedTimestamp() string {
 }
 
 func (notification *Notification) HTMLFormattedPayload() template.HTML {
-	payloadBytes, err := json.MarshalIndent(notification.PayloadStruct, "", "    ")
-	if err != nil {
-		zapLogger.Error(err.Error())
+	_, err := notification.GeneratePayloadStructFromBytes()
+	if err == nil {
+		payloadJson := fmt.Sprintf("```json\n%s\n```\n", notification.Payload)
+		htmlPayload, _ := GetHTMLFromMarkdown([]byte(payloadJson))
+		return htmlPayload
+	} else {
+		htmlPayload, _ := GetHTMLFromMarkdown([]byte(notification.Payload))
+		return htmlPayload
 	}
-	payloadJson := fmt.Sprintf("```json\n%s\n", payloadBytes)
-	htmlPayload, _ := GetHTMLFromMarkdown([]byte(payloadJson))
-	return htmlPayload
 }
 
 func (notification *Notification) HTMLFormattedHttpHeaders() template.HTML {

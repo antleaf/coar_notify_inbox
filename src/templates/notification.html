@@ -2,7 +2,7 @@
     <div class="col">
         <h2>Metadata</h2>
         <h4>Activity ID</h4>
-        <p>{{ .Notification.ActivityId }}</p>
+        <p>{{ if ne .Notification.ActivityId "" }}{{ .Notification.ActivityId }} {{ else }} n/a {{ end }}</p>
 
         <h4>Notification URL (this page)</h4>
         <p>{{ .Notification.Url }}</p>

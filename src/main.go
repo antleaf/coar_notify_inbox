@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"github.com/go-chi/chi/v5"
+	uuid "github.com/satori/go.uuid"
 	"github.com/unrolled/render"
 	"go.uber.org/zap"
 	"net/http"
@@ -24,20 +25,13 @@ func main() {
 	}
 
 	runServer()
-	//cliTesting2()
-}
-
-func cliTesting2() {
-	generateUUID()
+	//cliTesting()
 }
 
 func cliTesting() {
-	var err error
-	//err = testxpandJsonFromFile("data/payload_valid_notify.json")
-	//err = testExpandJsonFromDbId(2)
-	if err != nil {
-		zapLogger.Error(err.Error())
-	}
+	id, _ := uuid.FromString("d799534f-2c5e-40ae-a3db-325703c1e3ec")
+	notification := LoadNotificationFromDbById(id)
+	zapLogger.Debug(notification.ActivityId)
 }
 
 func runServer() {

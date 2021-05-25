@@ -1,10 +1,3 @@
 ## This is the home page
 
-* testing markdown
-
-`some code`
-
-```HTML
-<div>code fence</div>
-```
-
+Some instructions will appear here....

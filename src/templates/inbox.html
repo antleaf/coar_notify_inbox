@@ -13,7 +13,7 @@
     <tbody>
     {{ range .Notifications }}
         <tr>
-            <td>{{ .ActivityId }}</td>
+            <td>{{ if ne .ActivityId "" }}{{ .ActivityId }} {{ else }} n/a {{ end }}</td>
             <td>{{ .HttpResponseCode }}</td>
             <td>{{ .FormattedTimestamp }}</td>
             <td>{{ .Sender }}</td>
