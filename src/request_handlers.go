@@ -28,7 +28,6 @@ func HomePageGet(w http.ResponseWriter, r *http.Request) {
 }
 
 func InboxPost(w http.ResponseWriter, r *http.Request) {
-	//TODO: Refactor to allow notifications to be captured even if they are bogus - capture HTTP headers and response codes. Do validation separately
 	var err error
 	notification := NewNotification(GetIP(r), time.Now())
 	requestHeaderAsBytes, _ := yaml.Marshal(r.Header)
@@ -38,7 +37,8 @@ func InboxPost(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	notification.Payload = payloadJson
-	err = notification.CheckPayloadIsWellFormedJson()
+	//err = notification.CheckPayloadIsWellFormedJson()
+	err = notification.CheckPayloadIsJsonLd()
 	if handlePostErrorCondition(err, w, 400, "Unable to parse posted content (must be JSON-LD)", notification) {
 		return
 	}

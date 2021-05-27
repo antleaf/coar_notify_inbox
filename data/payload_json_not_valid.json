@@ -1,6 +1,6 @@
 {
   "@context": [
-    "https://www.w3.org/ns/activitystream",
+    "https://www.w3.org/ns/activitystrea",
     {
       "ietf": "http://www.iana.org/assignments/relation/",
       "ldp": "http://www.w3.org/ns/ldp#"

@@ -19,6 +19,7 @@ type Notification struct {
 	HttpRequest        string
 	HttpResponseHeader string
 	HttpResponseCode   int
+	ProcessLog         string
 }
 
 func NewNotification(sender string, timestamp time.Time) *Notification {
@@ -29,14 +30,22 @@ func NewNotification(sender string, timestamp time.Time) *Notification {
 	return &n
 }
 
-func (notification *Notification) GeneratePayloadStructFromBytes() (map[string]interface{}, error) {
+func (notification *Notification) AddToProcessLog(message string) {
+	notification.ProcessLog += message + "\n"
+}
+
+func (notification *Notification) ExpressPayloadAsMap() (map[string]interface{}, error) {
 	var err error
-	var payloadStruct map[string]interface{}
-	err = json.Unmarshal(notification.Payload, &(payloadStruct))
+	var payloadMap map[string]interface{}
+	err = json.Unmarshal(notification.Payload, &(payloadMap))
 	if err != nil {
 		zapLogger.Error(err.Error())
 	}
-	return payloadStruct, err
+	return payloadMap, err
+}
+
+func (notification *Notification) ExpressPayloadAsInterface() (interface{}, error) {
+	return notification.ExpressPayloadAsMap()
 }
 
 func (notification *Notification) SaveToDb() error {
@@ -56,7 +65,7 @@ func (notification *Notification) SaveToDb() error {
 func LoadNotificationFromDbById(id uuid.UUID) Notification {
 	notification := Notification{}
 	db.First(&notification, id)
-	notification.GeneratePayloadStructFromBytes()
+	notification.ExpressPayloadAsMap()
 	return notification
 }
 
@@ -66,7 +75,7 @@ func (notification *Notification) Url() string {
 
 func (notification *Notification) ProcessPayload() {
 	var err error
-	payloadStruct, err := notification.GeneratePayloadStructFromBytes()
+	payloadStruct, err := notification.ExpressPayloadAsMap()
 	if err == nil {
 		notification.ActivityId = fmt.Sprintf("%v", payloadStruct["id"])
 	}
@@ -77,7 +86,7 @@ func (notification *Notification) FormattedTimestamp() string {
 }
 
 func (notification *Notification) HTMLFormattedPayload() template.HTML {
-	_, err := notification.GeneratePayloadStructFromBytes()
+	_, err := notification.ExpressPayloadAsMap()
 	if err == nil {
 		payloadJson := fmt.Sprintf("```json\n%s\n```\n", notification.Payload)
 		htmlPayload, _ := GetHTMLFromMarkdown([]byte(payloadJson))

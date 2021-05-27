@@ -8,7 +8,7 @@ require (
 	github.com/mattn/go-sqlite3 v1.14.7 // indirect
 	github.com/piprate/json-gold v0.4.0
 	github.com/robfig/cron/v3 v3.0.0
-	github.com/satori/go.uuid v1.2.0 // indirect
+	github.com/satori/go.uuid v1.2.0
 	github.com/stretchr/testify v1.7.0 // indirect
 	github.com/unrolled/render v1.2.0
 	github.com/yuin/goldmark v1.3.5
@@ -16,8 +16,7 @@ require (
 	go.uber.org/zap v1.16.0
 	golang.org/x/sys v0.0.0-20210423082822-04245dca01da // indirect
 	golang.org/x/tools v0.0.0-20201224043029-2b0845dc783e // indirect
-	gopkg.in/yaml.v2 v2.4.0 // indirect
+	gopkg.in/yaml.v2 v2.4.0
 	gorm.io/driver/sqlite v1.1.4
 	gorm.io/gorm v1.20.7
-	github.com/go-fed/activity v1.0.0
 )
