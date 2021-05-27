@@ -71,8 +71,12 @@ func handlePostErrorCondition(err error, w http.ResponseWriter, code int, messag
 
 func InboxGet(w http.ResponseWriter, r *http.Request) {
 	inbox := NewInbox()
-	if r.Header.Get("Accept") == "application/json" {
-		pageRender.JSON(w, http.StatusOK, inbox.GetAsMapToPassToJsonRender())
+	if CheckExistenceAcceptHeaderMimeValue(r, "application/ld+json") {
+		w.Header().Set("Content-Type", "application/ld+json")
+		pageRender.Text(w, http.StatusOK, inbox.GetAsString())
+	} else if CheckExistenceAcceptHeaderMimeValue(r, "application/json") {
+		w.Header().Set("Content-Type", "application/json")
+		pageRender.Text(w, http.StatusOK, inbox.GetAsString())
 	} else {
 		page := NewInboxPage(inbox.Notifications)
 		page.Title = "Inbox"
@@ -82,7 +86,8 @@ func InboxGet(w http.ResponseWriter, r *http.Request) {
 
 func InboxGetJSON(w http.ResponseWriter, r *http.Request) {
 	inbox := NewInbox()
-	pageRender.JSON(w, http.StatusOK, inbox.GetAsMapToPassToJsonRender())
+	w.Header().Set("Content-Type", "application/ld+json")
+	pageRender.JSON(w, http.StatusOK, inbox.GetAsMap())
 }
 
 func InboxNotificationGet(w http.ResponseWriter, r *http.Request) {
@@ -90,9 +95,54 @@ func InboxNotificationGet(w http.ResponseWriter, r *http.Request) {
 	id, _ := uuid.FromString(idString)
 	notification := Notification{}
 	db.First(&notification, id)
-	var page = NewNotificationPage(notification)
-	page.Title = "Notification"
-	pageRender.HTML(w, http.StatusOK, "notification", page)
+	if CheckExistenceAcceptHeaderMimeValue(r, "application/ld+json") {
+		if notification.ActivityId != "" {
+			w.Header().Set("Content-Type", "application/ld+json")
+			pageRender.Text(w, http.StatusOK, string(notification.Payload))
+		} else {
+			http.Error(w, "No JSON-LD manifestation exists for this resource", 404)
+			return
+		}
+	} else if CheckExistenceAcceptHeaderMimeValue(r, "application/json") {
+		if notification.ActivityId != "" {
+			w.Header().Set("Content-Type", "application/json")
+			pageRender.Text(w, http.StatusOK, string(notification.Payload))
+		} else {
+			http.Error(w, "No JSON manifestation exists for this resource", 404)
+			return
+		}
+	} else if CheckExistenceAcceptHeaderMimeValue(r, "application/n-quads") {
+		if notification.ActivityId != "" {
+			w.Header().Set("Content-Type", "application/n-quads")
+			pageRender.Text(w, http.StatusOK, notification.PayloadNQuads)
+
+		} else {
+			http.Error(w, "No RDF manifestation exists for this resource", 404)
+			return
+		}
+	} else {
+		var page = NewNotificationPage(notification)
+		page.Title = "Notification"
+		pageRender.HTML(w, http.StatusOK, "notification", page)
+	}
+}
+
+func InboxNotificationGetJson(w http.ResponseWriter, r *http.Request) {
+	idString := chi.URLParam(r, "id")
+	id, _ := uuid.FromString(idString)
+	notification := Notification{}
+	db.First(&notification, id)
+	w.Header().Set("Content-Type", "application/ld+json")
+	pageRender.Text(w, http.StatusOK, string(notification.Payload))
+}
+
+func InboxNotificationGetNQuads(w http.ResponseWriter, r *http.Request) {
+	idString := chi.URLParam(r, "id")
+	id, _ := uuid.FromString(idString)
+	notification := Notification{}
+	db.First(&notification, id)
+	w.Header().Set("Content-Type", "application/n-quads")
+	pageRender.Text(w, http.StatusOK, notification.PayloadNQuads)
 }
 
 func GetPageBodyAsByteSliceFromFs(filename string) ([]byte, error) {
@@ -110,4 +160,13 @@ func GetIP(r *http.Request) string {
 		IPAddress = r.RemoteAddr
 	}
 	return IPAddress
+}
+
+func CheckExistenceAcceptHeaderMimeValue(r *http.Request, mime string) bool {
+	for _, v := range r.Header.Values("Accept") {
+		if v == mime {
+			return true
+		}
+	}
+	return false
 }

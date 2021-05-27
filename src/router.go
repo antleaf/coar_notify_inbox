@@ -27,6 +27,8 @@ func ConfigureRouter() chi.Router {
 	r.Get("/inbox.json", InboxGetJSON)
 	r.Post("/inbox", InboxPost)
 	r.Get("/inbox/{id}", InboxNotificationGet)
+	r.Get("/inbox/{id}.json", InboxNotificationGetJson)
+	r.Get("/inbox/{id}.nq", InboxNotificationGetNQuads)
 	r.Options("/inbox", Options)
 	return r
 }
