@@ -37,11 +37,10 @@ func InboxPost(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	notification.Payload = payloadJson
-	err = notification.CheckPayloadIsJsonLd()
+	err = notification.ProcessPayload()
 	if handlePostErrorCondition(err, w, 400, "Unable to parse posted content (must be JSON-LD)", notification) {
 		return
 	}
-	notification.ProcessPayload()
 	var page = NewPage()
 	page.Params["notificationUrl"] = fmt.Sprint(notification.ID)
 	page.Title = "Notification Response"

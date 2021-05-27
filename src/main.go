@@ -37,15 +37,15 @@ func cliTesting() {
 	proc := ld.NewJsonLdProcessor()
 	options := ld.NewJsonLdOptions("")
 	options.Format = "application/n-quads"
-	doc := map[string]interface{}{
-		"@context": "https://json-ld.org/contexts/person.jsonld",
-		"@id":      "http://dbpedia.org/resource/John_Lennon",
-		"name":     "John Lennon",
-		"born":     "1940-10-09",
-		"spouse":   "http://dbpedia.org/resource/Cynthia_Lennon",
-	}
+	//doc := map[string]interface{}{
+	//	"@context": "https://json-ld.org/contexts/person.jsonld",
+	//	"@id":      "http://dbpedia.org/resource/John_Lennon",
+	//	"name":     "John Lennon",
+	//	"born":     "1940-10-09",
+	//	"spouse":   "http://dbpedia.org/resource/Cynthia_Lennon",
+	//}
 
-	doc, _ = notification.ExpressPayloadAsMap()
+	doc, _ := notification.ExpressPayloadAsInterface()
 	quads, err := proc.ToRDF(doc, options)
 
 	if err != nil {

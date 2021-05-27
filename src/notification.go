@@ -3,6 +3,7 @@ package main
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/piprate/json-gold/ld"
 	uuid "github.com/satori/go.uuid"
 	"html/template"
 	"time"
@@ -15,6 +16,7 @@ type Notification struct {
 	DeletedAt          *time.Time `sql:"index"`
 	Sender             string
 	Payload            []byte
+	PayloadNQuads      string
 	ActivityId         string
 	HttpRequest        string
 	HttpResponseHeader string
@@ -34,18 +36,14 @@ func (notification *Notification) AddToProcessLog(message string) {
 	notification.ProcessLog += message + "\n"
 }
 
-func (notification *Notification) ExpressPayloadAsMap() (map[string]interface{}, error) {
+func (notification *Notification) ExpressPayloadAsInterface() (interface{}, error) {
 	var err error
-	var payloadMap map[string]interface{}
-	err = json.Unmarshal(notification.Payload, &(payloadMap))
+	var payloadInterface interface{}
+	err = json.Unmarshal(notification.Payload, &(payloadInterface))
 	if err != nil {
 		zapLogger.Error(err.Error())
 	}
-	return payloadMap, err
-}
-
-func (notification *Notification) ExpressPayloadAsInterface() (interface{}, error) {
-	return notification.ExpressPayloadAsMap()
+	return payloadInterface, err
 }
 
 func (notification *Notification) Persist() {
@@ -56,12 +54,27 @@ func (notification *Notification) Url() string {
 	return site.InboxUrl() + notification.ID.String()
 }
 
-func (notification *Notification) ProcessPayload() {
+func (notification *Notification) ProcessPayload() error {
 	var err error
-	payloadStruct, err := notification.ExpressPayloadAsMap()
-	if err == nil {
-		notification.ActivityId = fmt.Sprintf("%v", payloadStruct["id"])
+	payloadInterface, err := notification.ExpressPayloadAsInterface()
+	if err != nil {
+		return err
 	}
+	payloadMap := payloadInterface.(map[string]interface{})
+	notification.ActivityId = fmt.Sprintf("%v", payloadMap["id"])
+	proc := ld.NewJsonLdProcessor()
+	options := ld.NewJsonLdOptions("")
+	options.Format = "application/n-quads"
+	_, err = proc.Expand(payloadInterface, options)
+	triples, err := proc.ToRDF(payloadInterface, options)
+	if err != nil {
+		zapLogger.Debug(err.Error())
+		notification.AddToProcessLog(err.Error())
+		return err
+	}
+	notification.PayloadNQuads = triples.(string)
+	notification.AddToProcessLog("Appears to be valid JSON-LD")
+	return err
 }
 
 func (notification *Notification) FormattedTimestamp() string {
@@ -69,13 +82,23 @@ func (notification *Notification) FormattedTimestamp() string {
 }
 
 func (notification *Notification) HTMLFormattedPayload() template.HTML {
-	_, err := notification.ExpressPayloadAsMap()
-	if err == nil {
+	if notification.ActivityId != "" {
 		payloadJson := fmt.Sprintf("```json\n%s\n```\n", notification.Payload)
 		htmlPayload, _ := GetHTMLFromMarkdown([]byte(payloadJson))
 		return htmlPayload
 	} else {
 		htmlPayload, _ := GetHTMLFromMarkdown([]byte(notification.Payload))
+		return htmlPayload
+	}
+}
+
+func (notification *Notification) HTMLFormattedPayloadNQuads() template.HTML {
+	if notification.ActivityId != "" {
+		payloadNQuads := fmt.Sprintf("```\n%s\n```\n", notification.PayloadNQuads)
+		htmlPayload, _ := GetHTMLFromMarkdown([]byte(payloadNQuads))
+		return htmlPayload
+	} else {
+		htmlPayload, _ := GetHTMLFromMarkdown([]byte(""))
 		return htmlPayload
 	}
 }
@@ -88,44 +111,3 @@ func (notification *Notification) HTMLFormattedHttpHeaders() template.HTML {
 	htmlPayload, _ := GetHTMLFromMarkdown([]byte(markdown))
 	return htmlPayload
 }
-
-//type PayloadStruct struct {
-//	Id     string   `json:"id"`
-//	Type   []string `json:"type"`
-//	Actor  Actor    `json:"actor, omitempty"`
-//	Origin Service  `json:"origin"`
-//	Target Service  `json:"origin"`
-//	Object *Object  `json:"object,omitempty"`
-//}
-//
-//func (payload *PayloadStruct) UnMarshall(payloadJson []byte) {
-//	err := json.Unmarshal([]byte(payloadJson), &payload)
-//	zapLogger.Error(err.Error())
-//}
-//
-//type Object struct {
-//	Id    string `json:"id"`
-//	Type  []string `json:"type"`
-//	CiteAs string `json:"ietf:cite-as"`
-//	Url *Url `json:"url,omitempty"`
-//}
-//
-//type Url struct {
-//	Id    string `json:"id"`
-//	Type  []string `json:"type"`
-//	MediaType string `json:"media-type"`
-//}
-//
-//type Service struct {
-//	Id    string `json:"id"`
-//	Type  []string `json:"type"`
-//	Inbox string `json:"ldp:inbox"`
-//}
-//
-//type Actor struct {
-//	Id       string `json:"id"`
-//	Type     []string `json:"type"`
-//	Name     string `json:"name"`
-//	LdpInbox string `json:"ldp:inbox,omitempty"`
-//}
-//
