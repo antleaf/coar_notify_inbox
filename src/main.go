@@ -14,7 +14,6 @@ var zapLogger *zap.Logger
 var router chi.Router
 var config = Config{}
 var pageRender *render.Render
-var inbox = Inbox{}
 
 func main() {
 	var err error
@@ -31,7 +30,8 @@ func main() {
 
 func cliTesting() {
 	id, _ := uuid.FromString("d799534f-2c5e-40ae-a3db-325703c1e3ec")
-	notification := LoadNotificationFromDbById(id)
+	notification := Notification{}
+	db.First(&notification, id)
 	zapLogger.Debug(notification.ActivityId)
 
 	proc := ld.NewJsonLdProcessor()

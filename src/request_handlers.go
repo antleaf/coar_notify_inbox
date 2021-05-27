@@ -37,7 +37,6 @@ func InboxPost(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	notification.Payload = payloadJson
-	//err = notification.CheckPayloadIsWellFormedJson()
 	err = notification.CheckPayloadIsJsonLd()
 	if handlePostErrorCondition(err, w, 400, "Unable to parse posted content (must be JSON-LD)", notification) {
 		return
@@ -54,7 +53,7 @@ func InboxPost(w http.ResponseWriter, r *http.Request) {
 	notification.HttpResponseCode = 201
 	responseHeaderAsBytes, _ := yaml.Marshal(w.Header())
 	notification.HttpResponseHeader = string(responseHeaderAsBytes)
-	inbox.Add(*notification)
+	notification.Persist()
 }
 
 func handlePostErrorCondition(err error, w http.ResponseWriter, code int, message string, notification *Notification) bool {
@@ -64,7 +63,7 @@ func handlePostErrorCondition(err error, w http.ResponseWriter, code int, messag
 		notification.HttpResponseCode = code
 		responseHeaderAsBytes, _ := yaml.Marshal(w.Header())
 		notification.HttpResponseHeader = string(responseHeaderAsBytes)
-		inbox.Add(*notification)
+		notification.Persist()
 		return true
 	} else {
 		return false
@@ -72,6 +71,7 @@ func handlePostErrorCondition(err error, w http.ResponseWriter, code int, messag
 }
 
 func InboxGet(w http.ResponseWriter, r *http.Request) {
+	inbox := NewInbox()
 	if r.Header.Get("Accept") == "application/json" {
 		pageRender.JSON(w, http.StatusOK, inbox.GetAsMapToPassToJsonRender())
 	} else {
@@ -82,13 +82,15 @@ func InboxGet(w http.ResponseWriter, r *http.Request) {
 }
 
 func InboxGetJSON(w http.ResponseWriter, r *http.Request) {
+	inbox := NewInbox()
 	pageRender.JSON(w, http.StatusOK, inbox.GetAsMapToPassToJsonRender())
 }
 
 func InboxNotificationGet(w http.ResponseWriter, r *http.Request) {
 	idString := chi.URLParam(r, "id")
 	id, _ := uuid.FromString(idString)
-	notification := LoadNotificationFromDbById(id)
+	notification := Notification{}
+	db.First(&notification, id)
 	var page = NewNotificationPage(notification)
 	page.Title = "Notification"
 	pageRender.HTML(w, http.StatusOK, "notification", page)

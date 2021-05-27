@@ -20,7 +20,6 @@ func (config *Config) initialise() {
 	portPtr := flag.Int("port", 1313, "Port number")
 	dbPathPtr := flag.String("db", "", "Path to to Database file")
 	baseUrlPtr := flag.String("baseUrl", "http://localhost:1313", "Base URL")
-	dbSaveInterval := flag.String("dbSaveInterval", "@every 5s", "DB Persist period (see https://pkg.go.dev/github.com/robfig/cron for syntax")
 	flag.Parse()
 	config.Debugging = *debugPtr
 	if config.Debugging == true {
@@ -30,7 +29,6 @@ func (config *Config) initialise() {
 	}
 	config.Port = *portPtr
 	config.DbFilePath = *dbPathPtr
-	config.DbSaveInterval = *dbSaveInterval
 	site.BaseUrl = *baseUrlPtr
 }
 
@@ -69,19 +67,12 @@ func configureZapLogger(debugging bool) (*zap.Logger, error) {
 func configure() error {
 	var err error
 	config.initialise()
-	inbox.Initialise()
 	if config.DbFilePath != "" {
 		err = InitialiseDb(config.DbFilePath)
 		if err != nil {
 			zapLogger.Error(err.Error())
 			return err
 		}
-		err = inbox.LoadFromDb()
-		if err != nil {
-			zapLogger.Error(err.Error())
-			return err
-		}
-		initialisePeriodicDbPersistence(config.DbSaveInterval)
 	}
 	initialiseRendering()
 	router = ConfigureRouter()

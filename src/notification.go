@@ -48,25 +48,8 @@ func (notification *Notification) ExpressPayloadAsInterface() (interface{}, erro
 	return notification.ExpressPayloadAsMap()
 }
 
-func (notification *Notification) SaveToDb() error {
-	var err error
-	err = db.First(&Notification{}, notification.ID).Error
-	if err == nil {
-		err = db.Save(&notification).Error
-	} else {
-		err = db.Create(&notification).Error
-	}
-	if err != nil {
-		zapLogger.Error(err.Error())
-	}
-	return err
-}
-
-func LoadNotificationFromDbById(id uuid.UUID) Notification {
-	notification := Notification{}
-	db.First(&notification, id)
-	notification.ExpressPayloadAsMap()
-	return notification
+func (notification *Notification) Persist() {
+	db.Create(&notification)
 }
 
 func (notification *Notification) Url() string {
