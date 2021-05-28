@@ -85,6 +85,10 @@ td.field-name {
     font-weight: bold;
 }
 
+.view-column {
+    white-space: nowrap;
+}
+
 div#footer {
     margin-top: 20px;
     padding-top: 10px;

@@ -22,6 +22,7 @@ type Notification struct {
 	HttpResponseHeader string
 	HttpResponseCode   int
 	ProcessLog         string
+	ValidRdf           bool
 }
 
 func NewNotification(sender string, timestamp time.Time) *Notification {
