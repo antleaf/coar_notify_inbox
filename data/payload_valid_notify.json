@@ -1,16 +1,15 @@
 {
   "@context": [
-    "https://www.w3.org/ns/activitystreams/",
-    {
-      "ietf": "http://www.iana.org/assignments/relation/",
-      "ldp": "http://www.w3.org/ns/ldp#"
-    }
+    "https://www.w3.org/ns/activitystreams",
+    "http://purl.org/coar/notify"
   ],
   "actor": {
     "id": "https://orcid.org/0000-0002-1825-0097",
     "ldp:inbox": "https://josiahcarberry.com/ldn/inbox",
     "name": "Josiah Carberry",
-    "type": ["Person"]
+    "type": [
+      "Person"
+    ]
   },
   "id": "urn:uuid:0370c0fb-bb78-4a9b-87f5-bed307a509dd",
   "object": {
@@ -23,12 +22,16 @@
   "origin": {
     "id": "https://origin-system.org",
     "ldp:inbox": "https://origin-system.org/inbox/",
-    "type": ["System"]
+    "type": [
+      "Service"
+    ]
   },
   "target": {
     "id": "https://target-system.org",
     "ldp:inbox": "https://target-system.org/inbox/",
-    "type": ["System"]
+    "type": [
+      "Service"
+    ]
   },
   "type": [
     "Offer"

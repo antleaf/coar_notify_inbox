@@ -1,10 +1,7 @@
 {
   "@context": [
     "https://www.w3.org/ns/activitystrea",
-    {
-      "ietf": "http://www.iana.org/assignments/relation/",
-      "ldp": "http://www.w3.org/ns/ldp#"
-    }
+    "http://purl.org/coar/notify"
   ],
   "actor": {
     "id": "https://orcid.org/0000-0002-1825-0097",
@@ -26,14 +23,14 @@
     "id": "https://origin-system.org",
     "ldp:inbox": "https://origin-system.org/inbox/",
     "type": [
-      "System"
+      "Service"
     ]
   },
   "target": {
     "id": "https://target-system.org",
     "ldp:inbox": "https://target-system.org/inbox/",
     "type": [
-      "System"
+      "Service"
     ]
   },
   "type": [
