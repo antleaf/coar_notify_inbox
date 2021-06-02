@@ -17,23 +17,16 @@ var site = Site{}
 
 func (config *Config) initialise() {
 	debugPtr := flag.Bool("debug", false, "Enable debug logging")
-	portPtr := flag.Int("port", 1313, "Port number")
+	portPtr := flag.Int("port", 80, "Port number")
 	dbPathPtr := flag.String("db", "", "Path to to Database file")
-	baseUrlPtr := flag.String("baseUrl", "http://localhost:1313", "Base URL")
 	flag.Parse()
 	config.Debugging = *debugPtr
 	if config.Debugging == true {
 		zapLogger, _ = configureZapLogger(true)
-		EnableDebugging()
 		zapLogger.Info("Debugging enabled")
 	}
 	config.Port = *portPtr
 	config.DbFilePath = *dbPathPtr
-	site.BaseUrl = *baseUrlPtr
-}
-
-func EnableDebugging() {
-	zapLogger, _ = configureZapLogger(true)
 }
 
 func configureZapLogger(debugging bool) (*zap.Logger, error) {

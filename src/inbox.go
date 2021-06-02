@@ -31,7 +31,7 @@ func (inbox *Inbox) GetAsString() string {
 	var jsonString string
 	jsonMap := inbox.GetAsMap()
 	bytes, err := json.Marshal(jsonMap)
-	if err != nil {
+	if err == nil {
 		jsonString = string(bytes)
 	}
 	return jsonString
