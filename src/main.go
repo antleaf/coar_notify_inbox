@@ -25,6 +25,8 @@ func main() {
 	}
 
 	runServer()
+	//go runServer()
+	//testWebView()
 	//cliTesting()
 }
 
