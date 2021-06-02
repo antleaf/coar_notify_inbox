@@ -14,6 +14,12 @@ body {
     font-size: 14px;
 }
 
+pre {
+    background-color: #efefef;
+    padding: 5px;
+    border: 1px solid #cdcdcd;
+}
+
 a,a:visited,a:hover {
     color: #23527c;
 }
