@@ -1,4 +1,0 @@
-POST http://160.1.118.115:8088/
-Content-Type: application/ld+json
-
-< ../data/payload_valid_notify.json
