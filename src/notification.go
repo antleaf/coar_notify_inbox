@@ -3,9 +3,11 @@ package main
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/knakk/rdf"
 	"github.com/piprate/json-gold/ld"
 	uuid "github.com/satori/go.uuid"
 	"html/template"
+	"strings"
 	"time"
 )
 
@@ -17,6 +19,7 @@ type Notification struct {
 	Sender             string
 	Payload            []byte
 	PayloadNQuads      string
+	PayloadTurtle      string
 	ActivityId         string
 	HttpRequest        string
 	HttpResponseHeader string
@@ -67,14 +70,30 @@ func (notification *Notification) ProcessPayload() error {
 	options := ld.NewJsonLdOptions("")
 	options.Format = "application/n-quads"
 	_, err = proc.Expand(payloadInterface, options)
-	triples, err := proc.ToRDF(payloadInterface, options)
+	quads, err := proc.ToRDF(payloadInterface, options)
 	if err != nil {
 		zapLogger.Debug(err.Error())
 		notification.AddToProcessLog(err.Error())
 		return err
 	}
-	notification.PayloadNQuads = triples.(string)
+	notification.PayloadNQuads = quads.(string)
 	notification.AddToProcessLog("Appears to be valid JSON-LD")
+	stringReader := strings.NewReader(notification.PayloadNQuads)
+	decoder := rdf.NewTripleDecoder(stringReader, rdf.NTriples)
+	triples, err := decoder.DecodeAll()
+	if err != nil {
+		zapLogger.Error(err.Error())
+		return err
+	}
+	stringWriter := new(strings.Builder)
+	encoder := rdf.NewTripleEncoder(stringWriter, rdf.Turtle)
+	err = encoder.EncodeAll(triples)
+	encoder.Close()
+	notification.PayloadTurtle = stringWriter.String()
+	if err != nil {
+		zapLogger.Error(err.Error())
+		return err
+	}
 	return err
 }
 
@@ -97,6 +116,17 @@ func (notification *Notification) HTMLFormattedPayloadNQuads() template.HTML {
 	if notification.ActivityId != "" {
 		payloadNQuads := fmt.Sprintf("```\n%s\n```\n", notification.PayloadNQuads)
 		htmlPayload, _ := GetHTMLFromMarkdown([]byte(payloadNQuads))
+		return htmlPayload
+	} else {
+		htmlPayload, _ := GetHTMLFromMarkdown([]byte(""))
+		return htmlPayload
+	}
+}
+
+func (notification *Notification) HTMLFormattedPayloadTurtle() template.HTML {
+	if notification.ActivityId != "" {
+		payloadTurtle := fmt.Sprintf("```turtle\n%s\n```\n", notification.PayloadTurtle)
+		htmlPayload, _ := GetHTMLFromMarkdown([]byte(payloadTurtle))
 		return htmlPayload
 	} else {
 		htmlPayload, _ := GetHTMLFromMarkdown([]byte(""))

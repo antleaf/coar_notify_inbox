@@ -145,6 +145,15 @@ func InboxNotificationGetNQuads(w http.ResponseWriter, r *http.Request) {
 	pageRender.Text(w, http.StatusOK, notification.PayloadNQuads)
 }
 
+func InboxNotificationGetTurtle(w http.ResponseWriter, r *http.Request) {
+	idString := chi.URLParam(r, "id")
+	id, _ := uuid.FromString(idString)
+	notification := Notification{}
+	db.First(&notification, id)
+	w.Header().Set("Content-Type", "text/turtle")
+	pageRender.Text(w, http.StatusOK, notification.PayloadTurtle)
+}
+
 func GetPageBodyAsByteSliceFromFs(filename string) ([]byte, error) {
 	var err error
 	pageBodyBytes, err := pageAssets.ReadFile(filepath.Join("pages", filename))

@@ -29,6 +29,9 @@
                 {{ if ne .PayloadNQuads "" }}
                     | <a href="{{ .Url }}.nq">N-Quads</a>
                 {{ end }}
+                {{ if ne .PayloadTurtle "" }}
+                    | <a href="{{ .Url }}.ttl">Turtle</a>
+                {{ end }}
             </td>
         </tr>
     {{ end }}
