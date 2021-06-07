@@ -24,7 +24,9 @@ You can retrieve the inbox in JSON-LD format as follows:
 curl -H "Accept: application/ld+json" http://localhost:1313/inbox
 ```
 
-### Testing this system
+### About this system
 This system has been successfully tested (as an **LDN Receiver**) with the W3C-supplied test suite for LDN:
 
 [https://linkedresearch.org/ldn/tests/](https://linkedresearch.org/ldn/tests/)
+
+[Source code for this system is available](https://github.com/antleaf/coar_notify_inbox).
