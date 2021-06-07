@@ -64,6 +64,7 @@ func (notification *Notification) ProcessPayload() error {
 	if err != nil {
 		return err
 	}
+	notification.Payload, _ = json.MarshalIndent(payloadInterface, "", "  ")
 	payloadMap := payloadInterface.(map[string]interface{})
 	notification.ActivityId = fmt.Sprintf("%v", payloadMap["id"])
 	proc := ld.NewJsonLdProcessor()

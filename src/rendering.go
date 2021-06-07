@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"embed"
 	_ "embed"
+	"github.com/alecthomas/chroma/formatters/html"
 	"github.com/unrolled/render"
 	"github.com/yuin/goldmark"
 	highlighting "github.com/yuin/goldmark-highlighting"
@@ -30,11 +31,11 @@ func initialiseRendering() {
 		},
 		Extensions: []string{".html"},
 		Layout:     "_layout",
-		IndentJSON: false,
+		IndentJSON: true,
 	})
 }
 
-var markdownProcessor = goldmark.New(goldmark.WithExtensions(highlighting.NewHighlighting(highlighting.WithStyle("pygments"))))
+var markdownProcessor = goldmark.New(goldmark.WithExtensions(highlighting.NewHighlighting(highlighting.WithStyle("pygments"), highlighting.WithFormatOptions(html.TabWidth(2)))))
 
 func GetHTMLFromMarkdown(pageBodyBytes []byte) (template.HTML, error) {
 	var err error

@@ -11,7 +11,6 @@ require (
 	github.com/satori/go.uuid v1.2.0
 	github.com/stretchr/testify v1.7.0 // indirect
 	github.com/unrolled/render v1.2.0
-	github.com/webview/webview v0.0.0-20210330151455-f540d88dde4e
 	github.com/yuin/goldmark v1.3.5
 	github.com/yuin/goldmark-highlighting v0.0.0-20210428103930-3a9678dbb86c
 	go.uber.org/zap v1.16.0

@@ -16,15 +16,15 @@ type Config struct {
 var site = Site{}
 
 func (config *Config) initialise() {
-	debugPtr := flag.Bool("debug", false, "Enable debug logging")
-	portPtr := flag.Int("port", 80, "Port number")
-	dbPathPtr := flag.String("db", "", "Path to to Database file")
-	flag.Parse()
-	config.Debugging = *debugPtr
+	zapLogger, _ = configureZapLogger(config.Debugging)
 	if config.Debugging == true {
-		zapLogger, _ = configureZapLogger(true)
 		zapLogger.Info("Debugging enabled")
 	}
+	debugPtr := flag.Bool("debug", false, "Enable debug logging")
+	portPtr := flag.Int("port", 80, "Port number")
+	dbPathPtr := flag.String("db", "ldn_inbox.sqlite", "Path to to Database file")
+	flag.Parse()
+	config.Debugging = *debugPtr
 	config.Port = *portPtr
 	config.DbFilePath = *dbPathPtr
 }
