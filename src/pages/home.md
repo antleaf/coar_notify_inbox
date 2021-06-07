@@ -21,11 +21,30 @@ Here you will find links to inspect metadata and payloads in JSON-LD, N-Quads an
 #### Machine-readable view
 You can retrieve the inbox in JSON-LD format as follows:
 ```bash
-curl -H "Accept: application/ld+json" http://localhost:1313/inbox
+curl -H "Accept: application/ld+json" https://ldninbox.antleaf.com/inbox
+```
+
+### Getting Notifications directly
+The URL for a given notification uses a generated UUID, in the form:
+
+https://ldninbox.antleaf.com/inbox/<NOTIFICATION_UUID>
+
+With a browser, this URL will give you a comprehensive view of the notification, its metadata and its payload in various formats.
+
+To retrieve this notification's payload in machine-readable form, just issue a GET with the appropriate `Accept` header. Supported formats *(MIME Types) are:
+
+* application/ld+json
+* application/json
+* text/turtle
+* application/n-quads
+
+For example:
+```bash
+curl -H "Accept: application/ld+json" <NOTIFICATION_URL>
 ```
 
 ### About this system
-This system has been successfully tested (as an **LDN Receiver**) with the W3C-supplied test suite for LDN:
+This system has been successfully tested (as an *LDN Receiver*) with the W3C-supplied test suite for LDN:
 
 [https://linkedresearch.org/ldn/tests/](https://linkedresearch.org/ldn/tests/)
 

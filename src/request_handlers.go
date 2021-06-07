@@ -120,6 +120,15 @@ func InboxNotificationGet(w http.ResponseWriter, r *http.Request) {
 			http.Error(w, "No RDF manifestation exists for this resource", 404)
 			return
 		}
+	} else if CheckExistenceAcceptHeaderMimeValue(r, "text/turtle") {
+		if notification.ActivityId != "" {
+			w.Header().Set("Content-Type", "text/turtle")
+			pageRender.Text(w, http.StatusOK, notification.PayloadTurtle)
+
+		} else {
+			http.Error(w, "No RDF manifestation exists for this resource", 404)
+			return
+		}
 	} else {
 		var page = NewNotificationPage(notification)
 		page.Title = "Notification"

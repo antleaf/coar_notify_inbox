@@ -1,0 +1,3 @@
+GET http://localhost:1313/inbox/eca3d5a3-29a7-4711-8bc9-8ed0a8c153b1
+#Accept: application/ld+json
+Accept: text/turtle

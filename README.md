@@ -1,6 +1,8 @@
 # COAR LDN Inbox
 COAR Notify LDN inbox and validation test system
 
+Instructions for using the system appear on the home page of the webservice (see [source for this](https://github.com/antleaf/coar_notify_inbox/blob/main/src/pages/home.md))
+
 ## Build Image
 ```bash
 docker build -t notify_ldn_inbox .

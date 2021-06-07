@@ -1,5 +1,3 @@
 GET http://localhost:1313/inbox
-#Accept: application/json
 Accept: application/ld+json
 
-#Content-Type: application/json
