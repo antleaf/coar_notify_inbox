@@ -3,11 +3,11 @@ package main
 import "html/template"
 
 type Site struct {
-	//BaseUrl string
+	BaseUrl string
 }
 
 func (site *Site) InboxUrl() string {
-	return "/inbox/"
+	return site.BaseUrl + "/inbox/"
 }
 
 type Page struct {

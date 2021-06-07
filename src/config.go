@@ -4,6 +4,7 @@ import (
 	"flag"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
+	"strconv"
 )
 
 type Config struct {
@@ -16,17 +17,27 @@ type Config struct {
 var site = Site{}
 
 func (config *Config) initialise() {
-	zapLogger, _ = configureZapLogger(config.Debugging)
-	if config.Debugging == true {
-		zapLogger.Info("Debugging enabled")
-	}
 	debugPtr := flag.Bool("debug", false, "Enable debug logging")
+	hostPtr := flag.String("host", "http://localhost", "Protocol and host")
 	portPtr := flag.Int("port", 80, "Port number")
 	dbPathPtr := flag.String("db", "ldn_inbox.sqlite", "Path to to Database file")
 	flag.Parse()
 	config.Debugging = *debugPtr
+	config.Debugging = true
+	zapLogger, _ = configureZapLogger(config.Debugging)
+	if config.Debugging == true {
+		zapLogger.Info("Debugging enabled")
+	}
 	config.Port = *portPtr
+	zapLogger.Debug("Set port to ", zap.Int("port", config.Port))
+	if config.Port == 80 {
+		site.BaseUrl = *hostPtr
+	} else {
+		site.BaseUrl = *hostPtr + ":" + strconv.Itoa(config.Port)
+	}
+	zapLogger.Debug("Set base url to ", zap.String("host", site.BaseUrl))
 	config.DbFilePath = *dbPathPtr
+	zapLogger.Debug("Set db path to ", zap.String("db path", config.DbFilePath))
 }
 
 func configureZapLogger(debugging bool) (*zap.Logger, error) {

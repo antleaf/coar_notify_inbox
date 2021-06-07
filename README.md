@@ -1,32 +1,36 @@
-# coar_notify_inbox
+# COAR LDN Inbox
 COAR Notify LDN inbox and validation test system
 
-# Antleaf LDN Inbox
-
-
 ## Build Image
-`docker build -t antleaf_ldn_inbox .`
+```bash
+docker build -t notify_ldn_inbox .
+```
 
 ## Publish Image
 
-```
-docker image tag antleaf_ldn_inbox:latest antleaf/antleaf_ldn_inbox:1.2.1
-docker login 
-docker push antleaf/antleaf_ldn_inbox:1.2.1
-```
-
-## Alternativley, building and pushing from Apple Silicon:
 ```bash
-docker buildx build --platform linux/amd64,linux/arm64 --push -t antleaf/antleaf_ldn_inbox:1.2 .
-
+docker image tag notify_ldn_inbox:latest antleaf/notify_ldn_inbox:1.0
+docker login 
+docker push antleaf/notify_ldn_inbox:1.0
 ```
 
 ## Run container
-````bash
+
+With defaults:
+```bash
 docker run \
 	-it \
 	--rm \
-	--name antleaf_ldn_inbox_instance \
-	-p 1313:80 \
-	antleaf_ldn_inbox
+	-p 80:80 \
+	antleaf/notify_ldn_inbox:1.0
+```
+
+Specifying arguments:
+```bash
+docker run \
+	-it \
+	--rm \
+	-p 80:80 \
+	antleaf/notify_ldn_inbox:1.0 \
+	notify_ldn_inbox -db=/opt/data/ldn_inbox.sqlite -host=http://localhost -port=1313 -debug=true
 ```

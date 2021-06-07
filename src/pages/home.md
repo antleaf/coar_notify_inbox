@@ -21,6 +21,10 @@ Here you will find links to inspect metadata and payloads in JSON-LD, N-Quads an
 #### Machine-readable view
 You can retrieve the inbox in JSON-LD format as follows:
 ```bash
-curl -H "Accept: application/ld+json" httpp://localhost:1313/inbox
+curl -H "Accept: application/ld+json" http://localhost:1313/inbox
 ```
 
+### Testing this system
+This system has been successfully tested (as an **LDN Receiver**) with the W3C-supplied test suite for LDN:
+
+[https://linkedresearch.org/ldn/tests/](https://linkedresearch.org/ldn/tests/)
