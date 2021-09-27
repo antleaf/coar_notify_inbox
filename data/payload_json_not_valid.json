@@ -4,36 +4,45 @@
     "http://purl.org/coar/notify"
   ],
   "actor": {
-    "id": "https://orcid.org/0000-0002-1825-0097",
-    "ldp:inbox": "https://josiahcarberry.com/ldn/inbox",
-    "name": "Josiah Carberry",
-    "type": [
-      "Person"
-    ]
+    "id": "https://review-service.com",
+    "name": "Review Service",
+    "type": "Service"
   },
-  "id": "urn:uuid:0370c0fb-bb78-4a9b-87f5-bed307a509dd",
+  "context": {
+    "id": "https://research-organisation.org/repository/preprint/201203/421/",
+    "ietf:cite-as": "https://doi.org/10.5555/12345680",
+    "type": "sorg:AboutPage",
+    "url": {
+      "id": "https://research-organisation.org/repository/preprint/201203/421/content.pdf",
+      "media-type": "application/pdf",
+      "type": [
+        "Article",
+        "sorg:ScholarlyArticle"
+      ]
+    }
+  },
+  "id": "urn:uuid:4fb3af44-d4f8-4226-9475-2d09c2d8d9e0",
+  "inReplyTo": "urn:uuid:0370c0fb-bb78-4a9b-87f5-bed307a509dd",
   "object": {
-    "id": "https://origin-system.org/resources/0021",
-    "ietf:cite-as": "https://doi.org/10.4598/12123487",
+    "id": "urn:uuid:0370c0fb-bb78-4a9b-87f5-bed307a509dd",
+    "object": "https://research-organisation.org/repository/preprint/201203/421/",
     "type": [
-      "Document"
+      "Offer",
+      "coar-notify:ReviewAction"
     ]
   },
   "origin": {
-    "id": "https://origin-system.org",
-    "ldp:inbox": "https://origin-system.org/inbox/",
-    "type": [
-      "Service"
-    ]
+    "id": "https://review-service.com/system",
+    "inbox": "https://review-service.com/system/inbox/",
+    "type": "Service"
   },
   "target": {
-    "id": "https://target-system.org",
-    "ldp:inbox": "https://target-system.org/inbox/",
-    "type": [
-      "Service"
-    ]
+    "id": "https://research-organisation.org/repository",
+    "inbox": "https://research-organisation.org/repository/inbox/",
+    "type": "Service"
   },
   "type": [
-    "Offer"
+    "Accept",
+    "coar-notify:ReviewAction"
   ]
 }

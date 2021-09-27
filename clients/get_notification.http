@@ -1,3 +1,4 @@
-GET http://localhost:1313/inbox/eca3d5a3-29a7-4711-8bc9-8ed0a8c153b1
+#GET http://localhost:1313/inbox/eca3d5a3-29a7-4711-8bc9-8ed0a8c153b1
+GET https://ldninbox.antleaf.com/inbox/f7fb2f7f-bdc8-44d6-b684-014ff1dbd5a8
 #Accept: application/ld+json
 Accept: text/turtle
