@@ -4,6 +4,7 @@ import (
 	"fmt"
 	_ "github.com/alecthomas/chroma/formatters"
 	"github.com/go-chi/chi/v5"
+	"github.com/go-chi/chi/v5/middleware"
 	uuid "github.com/satori/go.uuid"
 	"gopkg.in/yaml.v2"
 	"io/ioutil"
@@ -91,76 +92,44 @@ func InboxGetJSON(w http.ResponseWriter, r *http.Request) {
 }
 
 func InboxNotificationGet(w http.ResponseWriter, r *http.Request) {
+	urlFormat, _ := r.Context().Value(middleware.URLFormatCtxKey).(string)
+	if urlFormat == "" {
+		urlFormat = GetFirstAcceptedMimeValue(r)
+	}
+	if urlFormat == "" {
+		urlFormat = "html"
+	}
 	idString := chi.URLParam(r, "id")
 	id, _ := uuid.FromString(idString)
 	notification := Notification{}
 	db.First(&notification, id)
-	if CheckExistenceAcceptHeaderMimeValue(r, "application/ld+json") {
+	switch urlFormat {
+	case "application/ld+json", "application/json", "json":
 		if notification.ActivityId != "" {
 			w.Header().Set("Content-Type", "application/ld+json")
 			pageRender.Text(w, http.StatusOK, string(notification.Payload))
 		} else {
-			http.Error(w, "No JSON-LD manifestation exists for this resource", 404)
-			return
+			http.Error(w, "No RDF representation of this resource was found", 404)
 		}
-	} else if CheckExistenceAcceptHeaderMimeValue(r, "application/json") {
-		if notification.ActivityId != "" {
-			w.Header().Set("Content-Type", "application/json")
-			pageRender.Text(w, http.StatusOK, string(notification.Payload))
-		} else {
-			http.Error(w, "No JSON manifestation exists for this resource", 404)
-			return
-		}
-	} else if CheckExistenceAcceptHeaderMimeValue(r, "application/n-quads") {
+	case "application/n-quads", "nq":
 		if notification.ActivityId != "" {
 			w.Header().Set("Content-Type", "application/n-quads")
-			pageRender.Text(w, http.StatusOK, notification.PayloadNQuads)
-
+			pageRender.Text(w, http.StatusOK, string(notification.PayloadNQuads))
 		} else {
-			http.Error(w, "No RDF manifestation exists for this resource", 404)
-			return
+			http.Error(w, "No RDF representation of this resource was found", 404)
 		}
-	} else if CheckExistenceAcceptHeaderMimeValue(r, "text/turtle") {
+	case "text/turtle", "ttl":
 		if notification.ActivityId != "" {
 			w.Header().Set("Content-Type", "text/turtle")
-			pageRender.Text(w, http.StatusOK, notification.PayloadTurtle)
-
+			pageRender.Text(w, http.StatusOK, string(notification.PayloadTurtle))
 		} else {
-			http.Error(w, "No RDF manifestation exists for this resource", 404)
-			return
+			http.Error(w, "No RDF representation of this resource was found", 404)
 		}
-	} else {
+	default:
 		var page = NewNotificationPage(notification)
 		page.Title = "Notification"
 		pageRender.HTML(w, http.StatusOK, "notification", page)
 	}
-}
-
-func InboxNotificationGetJson(w http.ResponseWriter, r *http.Request) {
-	idString := chi.URLParam(r, "id")
-	id, _ := uuid.FromString(idString)
-	notification := Notification{}
-	db.First(&notification, id)
-	w.Header().Set("Content-Type", "application/ld+json")
-	pageRender.Text(w, http.StatusOK, string(notification.Payload))
-}
-
-func InboxNotificationGetNQuads(w http.ResponseWriter, r *http.Request) {
-	idString := chi.URLParam(r, "id")
-	id, _ := uuid.FromString(idString)
-	notification := Notification{}
-	db.First(&notification, id)
-	w.Header().Set("Content-Type", "application/n-quads")
-	pageRender.Text(w, http.StatusOK, notification.PayloadNQuads)
-}
-
-func InboxNotificationGetTurtle(w http.ResponseWriter, r *http.Request) {
-	idString := chi.URLParam(r, "id")
-	id, _ := uuid.FromString(idString)
-	notification := Notification{}
-	db.First(&notification, id)
-	w.Header().Set("Content-Type", "text/turtle")
-	pageRender.Text(w, http.StatusOK, notification.PayloadTurtle)
 }
 
 func GetPageBodyAsByteSliceFromFs(filename string) ([]byte, error) {
@@ -187,4 +156,11 @@ func CheckExistenceAcceptHeaderMimeValue(r *http.Request, mime string) bool {
 		}
 	}
 	return false
+}
+
+func GetFirstAcceptedMimeValue(r *http.Request) string {
+	for _, v := range r.Header.Values("Accept") {
+		return v
+	}
+	return ""
 }

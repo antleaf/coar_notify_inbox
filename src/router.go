@@ -9,6 +9,7 @@ import (
 func ConfigureRouter() chi.Router {
 	r := chi.NewRouter()
 	r.Use(middleware.Logger)
+	r.Use(middleware.URLFormat)
 	r.Use(middleware.StripSlashes)
 	//TODO: figure out if it is possible to use this CORS module to add common HTTP headers to all HTTP Responses. Otherwise write a middleware handler to do this.
 	//r.Use(cors.Handler(cors.Options{
@@ -24,12 +25,12 @@ func ConfigureRouter() chi.Router {
 	r.Handle("/assets/*", http.FileServer(http.FS(embeddedAssets)))
 	r.Get("/", HomePageGet)
 	r.Get("/inbox", InboxGet)
-	r.Get("/inbox.json", InboxGetJSON)
+	//r.Get("/inbox.json", InboxGetJSON)
 	r.Post("/inbox", InboxPost)
 	r.Get("/inbox/{id}", InboxNotificationGet)
-	r.Get("/inbox/{id}.json", InboxNotificationGetJson)
-	r.Get("/inbox/{id}.nq", InboxNotificationGetNQuads)
-	r.Get("/inbox/{id}.ttl", InboxNotificationGetTurtle)
+	//r.Get("/inbox/{id}.json", InboxNotificationGetJson)
+	//r.Get("/inbox/{id}.nq", InboxNotificationGetNQuads)
+	//r.Get("/inbox/{id}.ttl", InboxNotificationGetTurtle)
 	r.Options("/inbox", Options)
 	return r
 }
