@@ -1,0 +1,12 @@
+
+
+{{ $next := .Params.Next }}
+<h3><i class="fa fa-envelope"></i> Send me an email</h3>
+<form method="post" action="/token">
+    <input type="hidden" name="strategy" value="email">
+    <input type="hidden" name="next" value="{{ $next }}">
+    <label>Enter your email address below:</label>
+    <input name="recipient" type="email" class="field block mb1"
+           required placeholder="Email address">
+    <button type="submit" class="btn btn-primary">Send</button>
+</form>

@@ -1,0 +1,18 @@
+
+
+<section class="container">
+        <h2>Email Sent!</h2>
+        <p class="{{ if .Params.TokenError }}muted{{end}}">An email has been sent to <strong>{{ .Params.Recipient }}</strong> containing a unique PIN. Enter the PIN you receive into the box below:</p>
+        <form method="POST">
+            <input type="hidden" name="strategy" value="email">
+            <input type="hidden" name="recipient" value="{{ .Params.Recipient }}">
+            <input type="hidden" name="uid" value="{{ .Params.UserID }}">
+            <input type="hidden" name="next" value="{{ .Params.Next }}">
+            <input type="text" name="token" required class="field" autofocus>
+            <button type="submit" class="btn btn-primary">Verify</button>
+        </form>
+        {{ if .Params.TokenError }}<p class="red">{{ .Params.TokenError }}</p>{{ end }}
+    </div>
+</section>
+
+

@@ -2,16 +2,23 @@ package main
 
 import (
 	"flag"
+	"github.com/gorilla/securecookie"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
+	"os"
 	"strconv"
+	"strings"
 )
 
 type Config struct {
-	Debugging      bool
-	Port           int
-	DbFilePath     string
-	DbSaveInterval string
+	Debugging                    bool
+	Port                         int
+	DbFilePath                   string
+	DbSaveInterval               string
+	SessionKey                   []byte
+	CookieKey                    []byte
+	AdminEmails                  []string
+	SessionExpiryIntervalSeconds int
 }
 
 var site = Site{}
@@ -21,6 +28,7 @@ func (config *Config) initialise() {
 	hostPtr := flag.String("host", "http://localhost", "Protocol and host")
 	portPtr := flag.Int("port", 80, "Port number")
 	dbPathPtr := flag.String("db", "ldn_inbox.sqlite", "Path to to Database file")
+	adminEmailPtr := flag.String("admin", "paul@antleaf.com", "Admin email address")
 	flag.Parse()
 	config.Debugging = *debugPtr
 	config.Debugging = true
@@ -38,6 +46,17 @@ func (config *Config) initialise() {
 	zapLogger.Debug("Set base url to ", zap.String("host", site.BaseUrl))
 	config.DbFilePath = *dbPathPtr
 	zapLogger.Debug("Set db path to ", zap.String("db path", config.DbFilePath))
+	config.SessionKey = []byte(os.Getenv("COAR_NOTIFY_INBOX_SESSION_KEY"))
+	if len(config.SessionKey) == 0 {
+		zapLogger.Fatal("Session Key is nil - please set this in your environment with key 'COAR_NOTIFY_INBOX_SESSION_KEY'")
+	}
+	config.CookieKey = []byte(os.Getenv("COAR_NOTIFY_INBOX_COOKIE_STORE_KEY"))
+	if len(config.CookieKey) == 0 {
+		zapLogger.Fatal("Cookie Key is nil - please set this in your environment with key 'COAR_NOTIFY_INBOX_COOKIE_STORE_KEY; For now, using random key'")
+		config.CookieKey = securecookie.GenerateRandomKey(16)
+	}
+	config.AdminEmails = strings.Split(*adminEmailPtr, ",")
+	config.SessionExpiryIntervalSeconds = 86400
 }
 
 func configureZapLogger(debugging bool) (*zap.Logger, error) {

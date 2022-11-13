@@ -85,22 +85,12 @@ func InboxGet(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func InboxGetJSON(w http.ResponseWriter, r *http.Request) {
-	inbox := NewInbox()
-	w.Header().Set("Content-Type", "application/ld+json")
-	pageRender.JSON(w, http.StatusOK, inbox.GetAsMap())
-}
-
 func InboxNotificationGet(w http.ResponseWriter, r *http.Request) {
 	urlFormat, _ := r.Context().Value(middleware.URLFormatCtxKey).(string)
 	if urlFormat == "" {
 		urlFormat = GetFirstAcceptedMimeValue(r)
 	}
-	if urlFormat == "" {
-		urlFormat = "html"
-	}
-	idString := chi.URLParam(r, "id")
-	id, _ := uuid.FromString(idString)
+	id, _ := uuid.FromString(chi.URLParam(r, "id"))
 	notification := Notification{}
 	db.First(&notification, id)
 	switch urlFormat {

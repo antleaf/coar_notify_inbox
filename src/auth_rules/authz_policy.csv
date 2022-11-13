@@ -1,0 +1,17 @@
+## BASIC ACCESS
+p,.*,/,GET,allow
+p,.*,/assets/**/*,GET,allow
+#
+## AUTHENTICATION / AUTHORISATION
+p,.*,/login,GET,allow
+p,.*,/logout,GET,allow
+p,.*,/token,GET|POST,allow
+#
+## INBOX
+p,.*,/inbox,GET,allow
+p,.*,/inbox/*,GET,allow
+p,.*,/inbox/,POST,allow
+#
+## ADMIN RULES
+p,paul@antleaf.com,/admin,GET,allow
+# p,paul@paulwalk.net,/admin,GET,allow
