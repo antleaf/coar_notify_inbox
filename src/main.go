@@ -6,7 +6,6 @@ import (
 	"github.com/unrolled/render"
 	"go.uber.org/zap"
 	"net/http"
-	//"github.com/casbin/casbin/v2"
 )
 
 var zapLogger *zap.Logger
@@ -16,7 +15,6 @@ var pageRender *render.Render
 
 func main() {
 	var err error
-	//enforcer, err := casbin.NewEnforcer("path/to/model.conf", "path/to/policy.csv")
 	err = configure()
 	if err == nil {
 		zapLogger.Info("System configured OK")
